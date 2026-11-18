@@ -1,0 +1,8 @@
+# GitHub Pages (Jekyll): nur die Dateien der Seite veröffentlichen. Dokumentation, Tests und Werkzeuge
+# bleiben im Repository (README, Abschnitt „Einrichtung von GitHub Pages“). Kein .nojekyll anlegen.
+exclude:
+  - README.md
+  - CLAUDE.md
+  - docs/
+  - tests/
+  - tools/
