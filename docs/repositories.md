@@ -1,6 +1,6 @@
 # Repositories des Projekts (intern)
 
-Stand 2026-11-18. Gegenstück zu `docs/repositories.md` im Produkt-Repository; bei Widerspruch gilt das Produkt-Repository. Diese Datei wird nicht über GitHub Pages veröffentlicht (`_config.yml`).
+Stand 2026-11-18. Gegenstück zu `docs/repositories.md` im Produkt-Repository; bei Widerspruch gilt das Produkt-Repository. Das Repository ist öffentlich; diese Datei steht nicht auf der Pages-Seite (`_config.yml`).
 
 | Repository | Inhalt | Verweis zurück |
 |---|---|---|

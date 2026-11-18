@@ -111,10 +111,10 @@ Die Gegenprobe braucht ein Produkt-Repository daneben (`PRODUKT_REPO`, Standard 
 ## Einrichtung von GitHub Pages
 
 1. Repository → Settings → Pages → „Deploy from a branch“, Branch `main`, Ordner `/ (root)`.
-2. `_config.yml` schließt `README.md`, `CLAUDE.md`, `docs/`, `tests/` und `tools/` von der Veröffentlichung aus (Jekyll von GitHub Pages). Nur die Dateien der Seite sind öffentlich. Nicht `.nojekyll` anlegen, sonst wird alles veröffentlicht.
+2. `_config.yml` schließt `README.md`, `CLAUDE.md`, `docs/`, `tests/` und `tools/` von der Pages-Seite aus (Jekyll von GitHub Pages), damit dort nur die Dateien der Seite liegen. Nicht `.nojekyll` anlegen, sonst landet alles auf der Seite.
 3. Nach der Einrichtung prüfen: Die Seite lädt; `…/README.md` und `…/tools/gegenprobe.sh` liefern 404; die Prüfsumme von `index.html` gleicht der im Repository.
 
-Nach Kenntnis (nicht abgerufen, vor der Einrichtung in der Dokumentation von GitHub prüfen): Pages aus einem privaten Repository braucht einen bezahlten Plan, und die Seite ist trotzdem öffentlich erreichbar, außer mit privaten Pages in GitHub Enterprise Cloud. Die Seite enthält keine Geheimnisse; der Schutz liegt im Browser (siehe Sicherheitsmodell).
+**Das Repository ist öffentlich** (Entscheidung des Auftraggebers, 2026-11-18). Alles darin ist für jeden lesbar, auch Doku, Tests und Werkzeuge; `_config.yml` hält nur die Pages-Seite schlank. Deshalb gehören nie private Schlüssel, Passphrasen, Lizenzen, Kundendaten oder Inhalte aus den privaten Repositories des Projekts hierher. Die Seite enthält keine Geheimnisse; der Schutz liegt im Browser (siehe Sicherheitsmodell): Ohne den verschlüsselten Testschlüssel auf dem eigenen Gerät und seine Passphrase kann niemand signieren, und Testlizenzen gelten nur in Testbuilds.
 
 ## Offline nutzen und Prüfsumme
 
