@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; manifest-src 'self'; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0b0d12" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef1f5" media="(prefers-color-scheme: light)">
+<meta name="description" content="Testlizenzen für Virtual Timer ausstellen, nur mit Testschlüsseln (test-…).">
+<meta name="apple-mobile-web-app-title" content="Testlizenz">
+<title>Testlizenz · Virtual Timer</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/symbol.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="app.css">
+<script src="js/kodierung.js" defer></script>
+<script src="js/gojson.js" defer></script>
+<script src="js/lizenz.js" defer></script>
+<script src="js/schluessel.js" defer></script>
+<script src="js/speicher.js" defer></script>
+<script src="js/app.js" defer></script>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brand">
+    <img src="icons/symbol.svg" alt="" width="36" height="36">
+    <div>
+      <h1>Testlizenz</h1>
+      <p class="sub">Virtual Timer · nur Testschlüssel</p>
+    </div>
+  </div>
+  <span class="chip static" id="zustand">Lädt …</span>
+</header>
+
+<noscript><p class="alert" data-tone="danger">Ohne JavaScript arbeitet das Werkzeug nicht.</p></noscript>
+<p class="alert" data-tone="danger" id="nicht-bereit" role="alert" hidden></p>
+
+<main id="inhalt">
+  <p class="lead">Stellt Lizenzen mit einem Testschlüssel (<code>test-…</code>) aus. Sie gelten nur in Test- und Entwicklungsbuilds von <code>timerd</code>, nie in einem Release. Produktivlizenzen entstehen weiter offline mit <code>licensectl</code>.</p>
+
+  <section class="card" aria-labelledby="t-schluessel">
+    <h2 id="t-schluessel"><span class="step" aria-hidden="true">1</span>Testschlüssel</h2>
+
+    <form id="f-neu" novalidate hidden>
+      <fieldset>
+        <legend class="sr-only">Herkunft des Schlüssels</legend>
+        <div class="segmented">
+          <label><input type="radio" name="quelle" value="erzeugen" checked>Neu erzeugen</label>
+          <label><input type="radio" name="quelle" value="import">Datei importieren</label>
+        </div>
+      </fieldset>
+      <div class="field" id="feld-schluesseldatei" hidden>
+        <span class="lbl" id="l-schluesseldatei">Schlüsseldatei aus <code>licensectl keygen</code> (mit Zeile <code>licensectl-kid: test-…</code>)</span>
+        <label class="btn file"><input type="file" id="schluesseldatei" aria-labelledby="l-schluesseldatei">Datei wählen</label>
+        <p class="hint" id="schluesseldatei-name"></p>
+      </div>
+      <div class="field">
+        <label for="pp-neu">Passphrase (mindestens 12 Zeichen)</label>
+        <input class="input" id="pp-neu" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="pp-neu2">Passphrase wiederholen</label>
+        <input class="input" id="pp-neu2" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+      </div>
+      <p class="hint">Die Passphrase wird nirgends gespeichert. Der Schlüssel liegt nur verschlüsselt in diesem Browser. Ohne Passphrase ist er verloren; ein neuer Testschlüssel ist schnell erzeugt.</p>
+      <p class="msg" id="f-neu-fehler" role="alert"></p>
+      <button class="btn btn-primary" type="submit" id="b-anlegen">Schlüssel erzeugen</button>
+    </form>
+
+    <div id="schluessel-da" hidden>
+      <dl class="facts">
+        <dt>Kennung</dt><dd><code id="kid"></code></dd>
+        <dt>Abgelegt</dt><dd class="num" id="abgelegt"></dd>
+        <dt>Speicher</dt><dd id="dauerhaft"></dd>
+      </dl>
+      <div class="field key-field">
+        <span class="lbl" id="l-oeffentlich">Öffentlicher Schlüssel für <code>TEST_LICENSE_KEY</code>, <code>trustedKeysFlag</code> und <code>licensectl verify -keys</code></span>
+        <code class="code" id="oeffentlich"></code>
+        <div class="row">
+          <button class="btn" type="button" id="b-kopieren">Kopieren</button>
+        </div>
+        <p class="hint" id="kopiert" role="status"></p>
+      </div>
+
+      <form id="f-entsperren" novalidate>
+        <div class="field">
+          <label for="pp">Passphrase</label>
+          <input class="input" id="pp" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+        <p class="msg" id="f-entsperren-fehler" role="alert"></p>
+        <button class="btn btn-primary" type="submit" id="b-entsperren">Entsperren</button>
+      </form>
+
+      <div id="entsperrt" hidden>
+        <p class="hint">Entsperrt. Sperrt sich nach 5 Minuten ohne Bedienung und beim Verlassen der Seite.</p>
+        <div class="row">
+          <button class="btn" type="button" id="b-sperren">Sperren</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="row">
+          <button class="btn btn-danger-outline" type="button" id="b-loeschen" aria-expanded="false" aria-controls="loeschen-frage">Schlüssel löschen …</button>
+        </div>
+        <div id="loeschen-frage" hidden>
+          <p class="hint warn">Der Schlüssel wird aus diesem Browser entfernt. Lizenzen damit bleiben gültig, solange ein Testbuild ihn kennt; neue lassen sich damit nicht mehr ausstellen. Das Ausgabeprotokoll bleibt.</p>
+          <div class="row">
+            <button class="btn btn-danger" type="button" id="b-loeschen-ja">Endgültig löschen</button>
+            <button class="btn" type="button" id="b-loeschen-nein">Abbrechen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="t-ausstellen">
+    <h2 id="t-ausstellen" tabindex="-1"><span class="step" aria-hidden="true">2</span>Lizenz ausstellen</h2>
+
+    <div id="s-anfrage">
+      <p class="hint">Das License Request File erstellt der Kunde in der Verwaltung unter „Lizenz“ oder mit <code>timerd license request</code>.</p>
+      <label class="btn btn-lg file wide"><input type="file" id="anfrage" accept=".json,application/json">License Request File wählen</label>
+      <p class="msg" id="anfrage-fehler" role="alert"></p>
+    </div>
+
+    <form id="f-werte" novalidate hidden>
+      <dl class="facts" id="anfrage-fakten"></dl>
+      <p class="hint" id="wunsch-hinweis"></p>
+      <fieldset class="field">
+        <legend class="lbl">Käufer</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="kaeufer" value="firma"><span>Firma: Firmenname in der Lizenz</span></label>
+          <label class="choice"><input type="radio" name="kaeufer" value="privat"><span>Privatperson: nur die Kundennummer, nie den Namen</span></label>
+        </div>
+      </fieldset>
+      <div class="field">
+        <label for="kunde">Kunde: Firmenname bzw. Kundennummer (K-100234)</label>
+        <input class="input" id="kunde" maxlength="120" autocomplete="off" spellcheck="false">
+      </div>
+      <fieldset class="field">
+        <legend class="lbl">Art</legend>
+        <div class="segmented">
+          <label><input type="radio" name="art" value="subscription">Laufzeitlizenz</label>
+          <label><input type="radio" name="art" value="perpetual">Dauerlizenz</label>
+        </div>
+      </fieldset>
+      <div class="grid">
+        <div class="field" id="feld-monate">
+          <label for="monate">Laufzeit in Monaten (Event-Lizenz: 1)</label>
+          <input class="input num" id="monate" type="number" inputmode="numeric" min="1" max="120">
+        </div>
+        <div class="field" id="feld-updates" hidden>
+          <label for="updates">Updates der Dauerlizenz in Monaten (0: ohne Ende)</label>
+          <input class="input num" id="updates" type="number" inputmode="numeric" min="0" max="120">
+        </div>
+        <div class="field">
+          <label for="plaetze">Bedienplätze</label>
+          <input class="input num" id="plaetze" type="number" inputmode="numeric" min="1" max="9999">
+        </div>
+      </div>
+      <fieldset class="field">
+        <legend class="lbl">Pakete</legend>
+        <div class="choices">
+          <label class="choice"><input type="checkbox" name="pakete" value="trp"><span>TRP (Companion, Steuerungen)</span></label>
+          <label class="choice"><input type="checkbox" name="pakete" value="mtdoe"><span>Anzeigen-Master</span></label>
+        </div>
+      </fieldset>
+      <div class="field">
+        <label for="kontingent">Kontingent (optional, Kennung:Anzahl)</label>
+        <input class="input" id="kontingent" placeholder="V-2026-01:5" autocomplete="off" autocapitalize="off" spellcheck="false">
+      </div>
+      <p class="msg" id="werte-fehler" role="alert"></p>
+      <div class="row">
+        <button class="btn btn-primary" type="submit">Vorschau</button>
+        <button class="btn" type="button" id="b-andere">Anderes Request File</button>
+      </div>
+    </form>
+
+    <div id="s-vorschau" hidden>
+      <h3 class="eyebrow" id="t-vorschau" tabindex="-1">Vorschau</h3>
+      <dl class="facts" id="vorschau-fakten"></dl>
+      <p class="hint">Zeitpunkte zählen ab dem Signieren nach der Uhr dieses Geräts; gültig ab 24 Stunden davor.</p>
+      <p class="hint warn" id="vorschau-gesperrt" hidden></p>
+      <p class="msg" id="vorschau-fehler" role="alert"></p>
+      <div class="row">
+        <button class="btn btn-primary" type="button" id="b-signieren">Signieren</button>
+        <button class="btn" type="button" id="b-aendern">Ändern</button>
+      </div>
+    </div>
+
+    <div id="s-fertig" hidden>
+      <p class="alert" data-tone="ok" id="fertig-titel" tabindex="-1"></p>
+      <dl class="facts" id="fertig-fakten"></dl>
+      <div class="row">
+        <button class="btn btn-primary btn-lg" type="button" id="b-herunterladen">License Response File herunterladen</button>
+      </div>
+      <p class="hint">Der Kunde spielt die Datei in der Verwaltung unter „Lizenz“ ein oder mit <code>timerd license import</code>.</p>
+      <div class="row">
+        <button class="btn" type="button" id="b-naechste">Nächste Lizenz</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="t-protokoll">
+    <h2 id="t-protokoll"><span class="step" aria-hidden="true">3</span>Ausgabeprotokoll</h2>
+    <p class="hint" id="protokoll-anzahl"></p>
+    <ol class="ledger" id="protokoll-liste"></ol>
+    <p class="msg" id="protokoll-fehler" role="alert"></p>
+    <div class="row">
+      <button class="btn" type="button" id="b-export">Als JSONL exportieren</button>
+    </div>
+    <p class="hint">Nur in diesem Browser gespeichert, im Format von <code>licensectl</code> (ohne <code>issuedBy</code>). Regelmäßig exportieren: Der Browser kann die Daten bei Platzmangel oder nach längerer Nichtnutzung löschen.</p>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>Ohne Server und ohne Netzverbindung: Die Seite sendet nichts (Content-Security-Policy). Version <span id="version"></span>.</p>
+</footer>
+<p class="sr-only" id="ansage" role="status" aria-live="polite"></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "Testlizenz · Virtual Timer",
+  "short_name": "Testlizenz",
+  "description": "Testlizenzen für Virtual Timer ausstellen, nur mit Testschlüsseln (test-…).",
+  "lang": "de",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
+  "icons": [
+    { "src": "icons/symbol.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "icons/symbol-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/symbol-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
